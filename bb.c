@@ -10,12 +10,16 @@ static void bb_ok(bb cad){
 }
 
 bb bb_cria(char *str){
-    return (bb){.tam = strlen(str),.mem = str};
+    return (bb){.tam = strlen(str),.cap = strlen(str),.mem = str};
 }
 
-//void bb_destroi(bb cad){
-//    
-//}
+bb bb_cria_vec(int n, char vec[n]){
+    return (bb){.tam = strlen(vec),.cap = n,.mem = vec};
+}
+
+void bb_destroi(bb cad){
+    if(cad.cap>0) free(cad.mem);   
+}
 
 int bb_tam(bb cad){
     return cad.tam;
@@ -37,7 +41,7 @@ bb bb_sub(bb cad, int pos, int tam){
         if(cad.tam+pos<0) pos = -1*(cad.tam);
         return (bb){.tam=tam,.mem=last+pos};
     }
-    return (bb){.tam=tam,.mem=(cad.mem)+pos};
+    return (bb){.tam=tam,.mem=(cad.mem)+pos,.cap=0};
 }
 
 int bb_busca_c(bb cad, int pos, bb chs){
@@ -74,7 +78,13 @@ int bb_busca_rnc(bb cad, int pos, bb chs){
 }
 
 int bb_busca_s(bb cad, int pos, bb buscada){
-    
+    if(pos<0) pos = 0;
+    for (int i = pos;i<cad.tam;i++){
+        if(cad.mem[i]==buscada.mem[0]){
+            if(bb_igual(bb_sub(cad,i,buscada.tam),buscada)) return i;
+        }
+    }
+    return -1;
 }
 
 bool bb_igual(bb cad, bb cadb){
@@ -89,9 +99,20 @@ void bb_imprime(bb cad){
     printf("%.*s",cad.tam,cad.mem);
 }
 
+// Alterações - BB2
+
+void bb_cat(bb *pcad, bb cadb){
+    int newlen = pcad->tam+cadb.tam;
+    int end = (pcad->cap > newlen)?newlen:pcad->cap;
+    for(int i = pcad->tam;i<end;i++){
+        
+    }
+}
+
 int main(){
-    bb s = bb_("abcdearecd");
-    printf("1o - %d\nUltimo - %d\n",bb_busca_nc(s,0,bb_("abcde")),bb_busca_rnc(s,0,bb_("abcde")));
+    bb s = bb_("aranha");
+    bb l = bb_("a");
+    printf("%d\n",bb_busca_s(s,0,l));
     //bb sub = bb_sub(s,-8,2);
     //bb_imprime(sub);
 }

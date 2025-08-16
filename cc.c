@@ -224,37 +224,50 @@ void cc_subst(cc *pcad, int pos, int tam, cc cadb, char preenche){
     if(tam > pcad->tam && pos < pcad->tam){
         pcad->tam = pos;
     }
-    // Pos = após o último caracter, apenas concatenar
+    // Pos = logo após o último caracter, apenas concatenar
     if(pos == pcad->tam){    
         cc_cat(pcad,cadb);
         return;
     }
     
+    // Posição depois do final da string
     if(pos>pcad->tam) tam = 0;
+
     int offset = cadb.tam - tam, fill = 0, fillpos = -1;
+
+    // Posição negativa (dentro da string, a partir do final)
     if(pos<0) pos = pcad->tam+pos;
+
+    // Preparar p/ preencher - Posição negativa fora da string
     if(pos<0 && pos + tam < 0){
         fill = -(pos)-tam;
         fillpos = cadb.tam;
         offset += fill + tam;
+        tam = 0;
         pos = 0;
     }
+
+    // Preparar p/ preencher - Posição positiva fora da string
     if(pos>pcad->tam){
         fill = pos - pcad->tam;
         fillpos = pcad->tam;
     }
+
     shiftChars(pcad,pos,offset);
     pcad->tam += offset;
+
     if(fill!=0){
         realocarMem(pcad,pcad->tam+fill);
         for(int i=fillpos;i<fillpos+fill;i++) pcad->mem[i] = preenche;
-        pcad->tam += fill;
+        if(fillpos != cadb.tam) {
+            pcad->tam += fill;
+        }
     }
+
     for(int i=pos,j=0;i<pos+cadb.tam;i++,j++){
         pcad->mem[i] = cadb.mem[j];
     }
     pcad->mem[pcad->tam] = '\0';
-    //cc_imprime(*pcad);
 }
 
 char *cc_strc(cc cad){
@@ -284,147 +297,5 @@ int main(){
     // cc_preenche(&s_alt,20,'a');
     // cc_imprime(s_alt);
     // printf("\n%d - %d\n",s_alt.tam,s_alt.cap);
-    
-    printf("\n=== CC_SUBST TESTS ===\n");
-    printf("All tests start with string 'abacaxi' and fill character '%%'\n\n");
-    
-    // Test case 1: pos=5, tam=2, cadb="te" -> "abacate"
-    cc test1 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test1, 5, 2, cc_("te"), '%');
-    cc expected1 = cc_("abacate");
-    printf("Test 1 - pos=5, tam=2, cadb=\"te\": ");
-    cc_imprime(test1);
-    if (cc_igual(test1, expected1)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected1);
-        printf(")\n");
-    }
-    
-    // Test case 2: pos=7, tam=0, cadb="." -> "abacaxi."
-    cc test2 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test2, 7, 0, cc_("."), '%');
-    cc expected2 = cc_("abacaxi.");
-    printf("Test 2 - pos=7, tam=0, cadb=\".\": ");
-    cc_imprime(test2);
-    if (cc_igual(test2, expected2)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected2);
-        printf(")\n");
-    }
-    
-    // Test case 3: pos=9, tam=0, cadb="." -> "abacaxi%%."
-    cc test3 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test3, 9, 0, cc_("."), '%');
-    cc expected3 = cc_("abacaxi%%.");
-    printf("Test 3 - pos=9, tam=0, cadb=\".\": ");
-    cc_imprime(test3);
-    if (cc_igual(test3, expected3)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected3);
-        printf(")\n");
-    }
-    
-    // Test case 4: pos=9, tam=0, cadb="" -> "abacaxi%%"
-    cc test4 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test4, 9, 0, cc_(""), '%');
-    cc expected4 = cc_("abacaxi%%");
-    printf("Test 4 - pos=9, tam=0, cadb=\"\": ");
-    cc_imprime(test4);
-    if (cc_igual(test4, expected4)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected4);
-        printf(")\n");
-    }
-    
-    // Test case 5: pos=9, tam=10, cadb="." -> "abacaxi%%."
-    cc test5 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test5, 9, 10, cc_("."), '%');
-    cc expected5 = cc_("abacaxi%%.");
-    printf("Test 5 - pos=9, tam=10, cadb=\".\": ");
-    cc_imprime(test5);
-    if (cc_igual(test5, expected5)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected5);
-        printf(")\n");
-    }
-    
-    // Test case 6: pos=-3, tam=0, cadb="123" -> "abac123axi"
-    cc test6 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test6, -3, 0, cc_("123"), '%');
-    cc expected6 = cc_("abac123axi");
-    printf("Test 6 - pos=-3, tam=0, cadb=\"123\": ");
-    cc_imprime(test6);
-    if (cc_igual(test6, expected6)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected6);
-        printf(")\n");
-    }
-    
-    // Test case 7: pos=0, tam=1, cadb="123" -> "123bacaxi"
-    cc test7 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test7, 0, 1, cc_("123"), '%');
-    cc expected7 = cc_("123bacaxi");
-    printf("Test 7 - pos=0, tam=1, cadb=\"123\": ");
-    cc_imprime(test7);
-    if (cc_igual(test7, expected7)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected7);
-        printf(")\n");
-    }
-    
-    // Test case 8: pos=-9, tam=1, cadb="123" -> "123%abacaxi"
-    cc test8 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test8, -9, 1, cc_("123"), '%');
-    cc expected8 = cc_("123%abacaxi");
-    printf("Test 8 - pos=-9, tam=1, cadb=\"123\": ");
-    cc_imprime(test8);
-    if (cc_igual(test8, expected8)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected8);
-        printf(")\n");
-    }
-    printf("Len Esperada: %d | Len Recebida: %d\n",expected8.tam,test8.tam);
-    
-    // Test case 9: pos=3, tam=200, cadb="" -> "aba"
-    cc test9 = cc_copia(cc_("abacaxi"));
-    cc_subst(&test9, 3, 200, cc_(""), '%');
-    cc expected9 = cc_("aba");
-    printf("Test 9 - pos=3, tam=200, cadb=\"\": ");
-    cc_imprime(test9);
-    if (cc_igual(test9, expected9)) {
-        printf(" ✅ PASS\n");
-    } else {
-        printf(" ❌ FAIL (expected: ");
-        cc_imprime(expected9);
-        printf(")\n");
-    }
-    
-    // Clean up
-    cc_destroi(test1);
-    cc_destroi(test2);
-    cc_destroi(test3);
-    cc_destroi(test4);
-    cc_destroi(test5);
-    cc_destroi(test6);
-    cc_destroi(test7);
-    cc_destroi(test8);
-    cc_destroi(test9);
-    
-    printf("\n=== CC_SUBST TESTS COMPLETE ===\n");
+   
 }

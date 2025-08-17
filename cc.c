@@ -279,7 +279,9 @@ char *cc_strc(cc cad){
 }
 
 cc cc_le_arquivo(cc nome){
-
+    FILE *arq = fopen(cc_strc(nome),"r");
+    int size = fseek(arq,0,SEEK_END);
+    printf("%d",size);
 }
 
 void cc_grava_arquivo(cc cad, cc nome){
@@ -293,9 +295,11 @@ int main(){
     cc s_alt = cc_copia(s);
     cc t = cc_("homem");
 
-    cc_subst(&s_alt,-s_alt.tam-1,0,t,'-');
-    // cc_preenche(&s_alt,20,'a');
-    // cc_imprime(s_alt);
-    // printf("\n%d - %d\n",s_alt.tam,s_alt.cap);
+    cc readTxt = cc_le_arquivo(cc_("teste.txt"));
+
+    //cc_subst(&s_alt,-s_alt.tam-1,0,t,'-');
+    //cc_preenche(&s_alt,20,'a');
+    //cc_imprime(s_alt);
+    //printf("\n%d - %d\n",s_alt.tam,s_alt.cap);
    
 }

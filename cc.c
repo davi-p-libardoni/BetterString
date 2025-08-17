@@ -121,7 +121,7 @@ int cc_busca_rc(cc cad, int pos, cc chs){
 int cc_busca_rnc(cc cad, int pos, cc chs){
     cc_ok(cad);
     cc_ok(chs);
-    for(int i = cad.tam;i>=pos;i--){
+    for(int i = cad.tam-1;i>=pos;i--){
         int found = 0;
         for(int j = 0;j<chs.tam;j++)
             if(cad.mem[i]==chs.mem[j]) found = 1;
@@ -280,26 +280,21 @@ char *cc_strc(cc cad){
 
 cc cc_le_arquivo(cc nome){
     FILE *arq = fopen(cc_strc(nome),"r");
-    int size = fseek(arq,0,SEEK_END);
-    printf("%d",size);
+    fseek(arq,0,SEEK_END);
+    int size = ftell(arq);
+    char *str = malloc(size);
+    fseek(arq,0,SEEK_SET);
+    fgets(str,size+1,arq);
+    fclose(arq);
+    str[size] = '\0';
+    int cap = 8;
+    while(cap<size+1)
+        cap *= 2;
+    return (cc){.mem=str,.tam=size,.cap=cap};
 }
 
 void cc_grava_arquivo(cc cad, cc nome){
-
-}
-
-// temporário, apenas para teste
-// APAGAR MAIN QUANDO TERMINAR AS FUNÇÕES
-int main(){
-    cc s = cc_("aranha");
-    cc s_alt = cc_copia(s);
-    cc t = cc_("homem");
-
-    cc readTxt = cc_le_arquivo(cc_("teste.txt"));
-
-    //cc_subst(&s_alt,-s_alt.tam-1,0,t,'-');
-    //cc_preenche(&s_alt,20,'a');
-    //cc_imprime(s_alt);
-    //printf("\n%d - %d\n",s_alt.tam,s_alt.cap);
-   
+    FILE *arq = fopen(cc_strc(nome),"w");
+    fputs(cc_strc(cad),arq);
+    fclose(arq);
 }

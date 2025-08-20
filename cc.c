@@ -8,7 +8,10 @@
 #define MIN_ALLOC 8
 
 // Helpers
-void realocarMem(cc *pcad, int newlen){
+static void realocarMem(cc *pcad, int newlen){
+    if(pcad->cap > 3*pcad->tam)
+        pcad->cap = pcad->cap/3;
+        
     if(pcad->cap <= newlen){
         int newsize = 8;
         while(newsize < newlen+1) newsize = newsize*2;
@@ -17,7 +20,7 @@ void realocarMem(cc *pcad, int newlen){
     }
 }
 
-void shiftChars(cc *pcad, int pos, int offset){
+static void shiftChars(cc *pcad, int pos, int offset){
     if(offset==0) return;
     realocarMem(pcad,pcad->tam+offset);
     if(offset<0){
@@ -158,7 +161,7 @@ void cc_imprime(cc cad){
 void cc_cat(cc *pcad, cc cadb){
     cc_ok(*pcad);
     cc_ok(cadb);
-    if(pcad->cap==0) return;
+    assert(pcad->cap>0);
     int newlen = pcad->tam+cadb.tam;
     realocarMem(pcad,newlen);
     int end = newlen;
@@ -171,7 +174,7 @@ void cc_cat(cc *pcad, cc cadb){
 
 void cc_catc(cc *pcad, char c){
     cc_ok(*pcad);
-    if(pcad->cap==0) return;
+    assert(pcad->cap > 0);
     realocarMem(pcad,pcad->tam+1);
     pcad->mem[pcad->tam] = c;
     pcad->mem[pcad->tam+1] = '\0';
@@ -181,7 +184,7 @@ void cc_catc(cc *pcad, char c){
 void cc_insere(cc *pcad, int pos, cc cadb){
     cc_ok(*pcad);
     cc_ok(cadb);
-    if(pcad->cap==0) return;
+    assert(pcad->cap > 0);
     if(pos > pcad->tam) pos = pcad->tam;
     if(pos < 0) pos = 0;
     realocarMem(pcad,pcad->tam+cadb.tam);
@@ -196,7 +199,8 @@ void cc_insere(cc *pcad, int pos, cc cadb){
 
 void cc_remove(cc *pcad, int pos, int tam){
     cc_ok(*pcad);
-    if(pcad->cap==0 || pos>=pcad->tam) return;
+    assert(pcad->cap > 0);
+    if(pos >= pcad->tam) return;
     if(pos<0) pos = pcad->tam+pos;
     if(pos+tam > pcad->tam) tam = pcad->tam - pos;
     for(int i = pos+tam;i < pcad->tam;i++){
@@ -208,6 +212,7 @@ void cc_remove(cc *pcad, int pos, int tam){
 
 void cc_preenche(cc *pcad, int tam, char c){
     cc_ok(*pcad);
+    assert(pcad->cap>0);
     if(pcad->tam == tam || pcad->cap == 0) return;
     realocarMem(pcad,tam);
     for(int i = pcad->tam;i<tam;i++)
@@ -219,7 +224,7 @@ void cc_preenche(cc *pcad, int tam, char c){
 void cc_subst(cc *pcad, int pos, int tam, cc cadb, char preenche){
     cc_ok(*pcad);
     cc_ok(cadb);
-    if(pcad->cap == 0 || tam<0) return;
+    assert(pcad->cap > 0 || tam>=0);
     // Tam > pcad inteira, trunca pcad na posição pos para concatenar abaixo
     if(tam > pcad->tam && pos < pcad->tam){
         pcad->tam = pos;

@@ -22,14 +22,13 @@ static void realocarMem(cc *pcad, int newlen){
 
 static void shiftChars(cc *pcad, int pos, int offset){
     if(offset==0) return;
-    realocarMem(pcad,pcad->tam+offset);
-    if(offset<0){
-        for(int i=pos;i<pcad->tam;i++)
+    if(offset<0)
+        for(int i=pos+1;i<pcad->tam;i++)
             pcad->mem[i+offset] = pcad->mem[i];
-    }else{
+    realocarMem(pcad,pcad->tam+offset);
+    if(offset>0)
         for(int i=pcad->tam-1;i>=pos;i--)
             pcad->mem[i+offset] = pcad->mem[i];
-    }
 }
 
 
@@ -94,9 +93,10 @@ cc cc_sub(cc cad, int pos, int tam){
 int cc_busca_c(cc cad, int pos, cc chs){
     cc_ok(cad);
     cc_ok(chs);
-    for(int i = pos;i<cad.tam;i++)
+    for(int i = pos;i<cad.tam;i++){
         for(int j = 0;j<chs.tam;j++)
             if(cad.mem[i]==chs.mem[j]) return i;
+    }
     return -1;
 }
 

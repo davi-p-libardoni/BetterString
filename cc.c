@@ -22,10 +22,10 @@ static void realocarMem(cc *pcad, int newlen){
 
 static void shiftChars(cc *pcad, int pos, int offset){
     if(offset==0) return;
+    realocarMem(pcad,pcad->tam+offset);
     if(offset<0)
         for(int i=pos+1;i<pcad->tam;i++)
             pcad->mem[i+offset] = pcad->mem[i];
-    realocarMem(pcad,pcad->tam+offset);
     if(offset>0)
         for(int i=pcad->tam-1;i>=pos;i--)
             pcad->mem[i+offset] = pcad->mem[i];
@@ -76,7 +76,9 @@ char *cc_mem(cc cad){
 
 char cc_ch(cc cad, int pos){
     cc_ok(cad);
-    if(pos >= cad.tam || pos < 0) return '\0';
+    if(pos >= cad.tam) return '\0';
+    if(pos<0) pos = cad.tam + pos;
+    if(pos<0) return '\0';
     return cad.mem[pos];
 }
 
@@ -115,7 +117,10 @@ int cc_busca_nc(cc cad, int pos, cc chs){
 int cc_busca_rc(cc cad, int pos, cc chs){
     cc_ok(cad);
     cc_ok(chs);
-    for(int i = cad.tam;i>=pos;i--)
+    if(pos<0) pos = cad.tam + pos;
+    if(pos<0) return -1;
+    if(pos>cad.tam) pos = cad.tam - 1;
+    for(int i = pos;i>=0;i--)
         for(int j = 0;j<chs.tam;j++)
             if(cad.mem[i]==chs.mem[j]) return i;
     return -1;
@@ -124,7 +129,9 @@ int cc_busca_rc(cc cad, int pos, cc chs){
 int cc_busca_rnc(cc cad, int pos, cc chs){
     cc_ok(cad);
     cc_ok(chs);
-    for(int i = cad.tam-1;i>=pos;i--){
+    if(pos<0) pos = cad.tam + pos;
+    if(pos<0) return -1;
+    for(int i = pos;i>=0;i--){
         int found = 0;
         for(int j = 0;j<chs.tam;j++)
             if(cad.mem[i]==chs.mem[j]) found = 1;
@@ -213,7 +220,7 @@ void cc_remove(cc *pcad, int pos, int tam){
 void cc_preenche(cc *pcad, int tam, char c){
     cc_ok(*pcad);
     assert(pcad->cap>0);
-    if(pcad->tam == tam || pcad->cap == 0) return;
+    if(pcad->tam >= tam || pcad->cap == 0) return;
     realocarMem(pcad,tam);
     for(int i = pcad->tam;i<tam;i++)
         pcad->mem[i] = c;
@@ -287,19 +294,23 @@ cc cc_le_arquivo(cc nome){
     FILE *arq = fopen(cc_strc(nome),"r");
     fseek(arq,0,SEEK_END);
     int size = ftell(arq);
-    char *str = malloc(size);
+    cc res = (cc){.mem=NULL,.tam=size,.cap=8};
+    res.mem = malloc(size);
     fseek(arq,0,SEEK_SET);
-    fgets(str,size+1,arq);
+    fread(res.mem,1,size+1,arq);
     fclose(arq);
-    str[size] = '\0';
+    res.mem[size] = '\0';
     int cap = 8;
     while(cap<size+1)
         cap *= 2;
-    return (cc){.mem=str,.tam=size,.cap=cap};
+    res.cap = cap;
+    return res;
 }
 
 void cc_grava_arquivo(cc cad, cc nome){
     FILE *arq = fopen(cc_strc(nome),"w");
-    fputs(cc_strc(cad),arq);
+    char* str = cc_strc(cad);
+    fprintf(arq,str);
+    free(str);
     fclose(arq);
 }
